@@ -158,7 +158,7 @@ module.exports = function(RED) {
             var outputConfig = n.config.slice(outputStart + REMOTEXY_OUTPUTS_MARKER.length, variablesEnd).split("\n");
             var index = 0;
             for (var x = 0; x < outputConfig.length; x++) {
-                var output = outputConfig[x].match(/(?:unsigned|signed)?\s*(?:char|int8_t|uint8_t) (\w+)(?:\[(\d+)\])?;\s+(?:\/\*|\/\/) (string|(=(-?\d+)+\.\.(\d+)))/);
+                var output = outputConfig[x].match(/(?:unsigned|signed)?\s*(?:char|int8_t|uint8_t|float|double) (\w+)(?:\[(\d+)\])?;\s+(?:\/\*|\/\/) (string|(=(-?\d+)+\.\.(\d+)))/);
 
                 if (output != null) {
                     node.outputVariables.push({min:output[5]*1, max:output[6]*1, length:output[2]*1,
@@ -177,7 +177,7 @@ module.exports = function(RED) {
                 var id = (1+Math.random()*4294967295).toString(16);
                 connectionPool[id] = socket;
                 count++;
-                // node.status({text:RED._("node-red:tcpin.status.connections",{count:count})});
+                node.status({text:RED._("node-red:tcpin.status.connections",{count:count})});
                 node.log("Client connected " + socket.address().address);
 
                 var command = [];
@@ -197,7 +197,7 @@ module.exports = function(RED) {
                     while ((command.length > 0) && (command[0] != REMOTEXY_PACKAGE_START_BYTE)) {
                         command.shift();
                     }
-	    	    if (command.length < 6) {
+	    	        if (command.length < 6) {
                         return;
                     }
 
@@ -300,7 +300,7 @@ module.exports = function(RED) {
                 socket.on('close', function() {
                     delete connectionPool[id];
                     count--;
-                    //node.status({text:RED._("node-red:tcpin.status.connections",{count:count})});
+                    node.status({text:RED._("node-red:tcpin.status.connections",{count:count})});
                     node.log("Client disconnected");
                 });
                 socket.on('error',function(err) {
@@ -469,7 +469,7 @@ module.exports = function(RED) {
                    (outputStart>0)?outputStart:variablesEnd).split("\n");
 
             for (var x = 0; x < inputConfig.length; x++) {
-                var input = inputConfig[x].match(/(?:unsigned|signed)?\s*(?:char|int8_t|uint8_t) (\w+);/);
+                var input = inputConfig[x].match(/(?:unsigned|signed)?\s*(?:char|int8_t|uint8_t|float|double) (\w+);/);
 
                 if (input != null) {
                     inputVariableNames[request.body.id + "*"].push(input[1]);
@@ -483,7 +483,7 @@ module.exports = function(RED) {
             var outputConfig = request.body.config.slice(outputStart + REMOTEXY_OUTPUTS_MARKER.length, variablesEnd).split("\n");
 
             for (var x = 0; x < outputConfig.length; x++) {
-                var output = outputConfig[x].match(/(?:unsigned|signed)?\s*(?:char|int8_t|uint8_t) (\w+)(?:\[(\d+)\])?;\s+(?:\/\*|\/\/) (string|(=(-?\d+)+\.\.(\d+)))/);
+                var output = outputConfig[x].match(/(?:unsigned|signed)?\s*(?:char|int8_t|uint8_t|float|double) (\w+)(?:\[(\d+)\])?;\s+(?:\/\*|\/\/) (string|(=(-?\d+)+\.\.(\d+)))/);
 
                 if (output != null) {
                     outputVariableNames[request.body.id + "*"].push(output[1]);

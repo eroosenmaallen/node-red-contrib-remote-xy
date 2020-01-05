@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-remote-xy",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "A node-red node for interfacing with the Remote XY IoT control panel on Android.",
   "dependencies": {},
   "author": {
@@ -14,12 +14,12 @@
     "iot"
   ],
   "bugs": {
-    "url": "https://github.com/DeanCording/node-red-contrib-remote-xy/issues"
+    "url": "https://github.com/eroosenmaallen/node-red-contrib-remote-xy/issues"
   },
-  "homepage": "https://github.com/DeanCording/node-red-contrib-remote-xy",
+  "homepage": "https://github.com/eroosenmaallen/node-red-contrib-remote-xy",
   "repository": {
     "type": "git",
-    "url": "https://github.com/DeanCording/node-red-contrib-remote-xy.git"
+    "url": "https://github.com/eroosenmaallen/node-red-contrib-remote-xy.git"
   },
   "node-red": {
     "nodes": {

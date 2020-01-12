@@ -140,7 +140,7 @@ module.exports = function(RED) {
                                ((outputStart > 0)?outputStart:variablesEnd)).split("\n");
 
             for (var x = 0; x < inputConfig.length; x++) {
-                var input = inputConfig[x].match(/(?:unsigned|signed)?\s*(?:char|int8_n|uint8_n|uint8_t|int8_t) (\w+);/);
+                var input = inputConfig[x].match(/(?:unsigned|signed)?\s*(?:char|int8_n|uint8_n|uint8_t|int8_t|float|double) (\w+);/);
                 if (input != null) {
                     node.inputVariableListeners.push({});
                     inputVariableNames[node.id].push(input[1]);
@@ -179,6 +179,7 @@ module.exports = function(RED) {
                 count++;
                 node.status({text:RED._("node-red:tcpin.status.connections",{count:count})});
                 node.log("Client connected " + socket.address().address);
+                node.log('Ooga chucka!');
 
                 var command = [];
 
@@ -398,9 +399,9 @@ module.exports = function(RED) {
                     node.send(msg);
                 }, this.id);
 
-            node.dashboardConfig.on('opened', function(n) { node.status({fill:"green",shape:"dot",text:"connected "+n}); });
+            node.dashboardConfig.on('opened', function(n) { node.status({fill:"green",shape:"dot",text:"node-red:common.status.connected "+n}); });
             node.dashboardConfig.on('erro', function() { node.status({fill:"red",shape:"ring",text:"error"}); });
-            node.dashboardConfig.on('closed', function() { node.status({fill:"yellow",shape:"ring",text:"disconnected"}); });
+            node.dashboardConfig.on('closed', function() { node.status({fill:"yellow",shape:"ring",text:"node-red:common.status.disconnected"}); });
         } else {
             node.error("Dashboard config missing");
         }
@@ -423,9 +424,9 @@ module.exports = function(RED) {
             node.error("Dashboard config missing");
         }
         else {
-            node.dashboardConfig.on('opened', function(n) { node.status({fill:"green",shape:"dot",text:"connected "+n}); });
+            node.dashboardConfig.on('opened', function(n) { node.status({fill:"green",shape:"dot",text:"node-red:common.status.connected "+n}); });
             node.dashboardConfig.on('erro', function() { node.status({fill:"red",shape:"ring",text:"error"}); });
-            node.dashboardConfig.on('closed', function() { node.status({fill:"yellow",shape:"ring",text:"disconnected"}); });
+            node.dashboardConfig.on('closed', function() { node.status({fill:"yellow",shape:"ring",text:"node-red:common.status.disconnected"}); });
         }
         node.on("input", function(msg) {
             node.dashboardConfig.update(node.index, msg.payload);

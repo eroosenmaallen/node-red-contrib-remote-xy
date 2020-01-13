@@ -29,6 +29,7 @@
 
 require('buffer');
 const util = require('util');
+
 module.exports = function(RED) {
     const REMOTEXY_INPUT_LENGTH_INDEX = 1;
     const REMOTEXY_OUTPUT_LENGTH_INDEX = 3;
@@ -81,6 +82,7 @@ module.exports = function(RED) {
         RED.nodes.createNode(this,n);
         var node = this;
         var count = 0;
+        var _ee = new events.EventEmitter('remote-xy-dashboard');
 
         // Store local copies of the node configuration (as defined in the .html)
         node.port = n.port * 1;
@@ -135,7 +137,7 @@ module.exports = function(RED) {
 	    (parseInt(configArray[REMOTEXY_INPUT_LENGTH_INDEX+1]) * 256));
         node.inputVariablesBuffer.fill(0);
 
-	if (inputStart > 0) {
+    	if (inputStart > 0) {
             var inputConfig = n.config.slice(inputStart + REMOTEXY_INPUTS_MARKER.length,
                                ((outputStart > 0)?outputStart:variablesEnd)).split("\n");
 
@@ -179,7 +181,8 @@ module.exports = function(RED) {
                 count++;
                 node.status({text:RED._("node-red:tcpin.status.connections",{count:count})});
                 node.log("Client connected " + socket.address().address);
-                node.log('Ooga chucka!');
+                
+                node.emit('connect', count);
 
                 var command = [];
 
@@ -295,16 +298,19 @@ module.exports = function(RED) {
 
                 });
                 socket.on('timeout', function() {
+                    node.emit('timeout');
                     node.log(RED._("node-red:tcpin.errors.timeout",{port:node.port}));
                     socket.end();
                 });
                 socket.on('close', function() {
+                    node.emit('socket.close');
                     delete connectionPool[id];
                     count--;
                     node.status({text:RED._("node-red:tcpin.status.connections",{count:count})});
                     node.log("Client disconnected");
                 });
                 socket.on('error',function(err) {
+                    node.emit('socket.error', err);
                     node.log(err);
                 });
             });
@@ -399,9 +405,15 @@ module.exports = function(RED) {
                     node.send(msg);
                 }, this.id);
 
-            node.dashboardConfig.on('opened', function(n) { node.status({fill:"green",shape:"dot",text:"node-red:common.status.connected "+n}); });
-            node.dashboardConfig.on('erro', function() { node.status({fill:"red",shape:"ring",text:"error"}); });
-            node.dashboardConfig.on('closed', function() { node.status({fill:"yellow",shape:"ring",text:"node-red:common.status.disconnected"}); });
+            node.dashboardConfig.on('connect', function(n) { 
+                node.status({fill:"green",shape:"dot",text:"connected"});
+            });
+            node.dashboardConfig.on('socket.error', function(err) {
+                node.status({fill:"red",shape:"ring",text:"error"});
+            });
+            node.dashboardConfig.on('socket.close', function() {
+                node.status({fill:"yellow",shape:"ring",text:"disconnected"});
+            });
         } else {
             node.error("Dashboard config missing");
         }
@@ -424,9 +436,15 @@ module.exports = function(RED) {
             node.error("Dashboard config missing");
         }
         else {
-            node.dashboardConfig.on('opened', function(n) { node.status({fill:"green",shape:"dot",text:"node-red:common.status.connected "+n}); });
-            node.dashboardConfig.on('erro', function() { node.status({fill:"red",shape:"ring",text:"error"}); });
-            node.dashboardConfig.on('closed', function() { node.status({fill:"yellow",shape:"ring",text:"node-red:common.status.disconnected"}); });
+            node.dashboardConfig.on('connect', function(n) { 
+                node.status({fill:"green",shape:"dot",text:"connected"});
+            });
+            node.dashboardConfig.on('socket.error', function(err) {
+                node.status({fill:"red",shape:"ring",text:"error"});
+            });
+            node.dashboardConfig.on('socket.close', function() {
+                node.status({fill:"yellow",shape:"ring",text:"disconnected"});
+            });
         }
         node.on("input", function(msg) {
             node.dashboardConfig.update(node.index, msg.payload);
